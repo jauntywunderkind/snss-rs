@@ -11,7 +11,7 @@ use std::fs::File;
 
 define_layout!(snss_header, LittleEndian, {
     header: [u8; 4],
-    version: [u8; 4],
+    version: u32,
 });
 
 define_layout!(snss_packet, LittleEndian, {
@@ -26,7 +26,13 @@ pub struct Snss<'a> {
 
 impl<'a> Snss<'a> {
     fn new(data: &'a [u8]) -> Snss {
-        Snss { data, position: 0 }
+        let mut snss = Snss { data, position: 8 };
+        snss.assert_header();
+        snss
+    }
+    fn assert_header(&mut self) {
+        assert!(snss_header::header::data(self.data) == "SNSS".as_bytes());
+        assert!(snss_header::version::read(self.data) == 3);
     }
 }
 
