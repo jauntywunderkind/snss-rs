@@ -1,5 +1,5 @@
 [package]
-name = "snss-rs"
+name = "snss"
 version = "0.1.0"
 
 [dependencies]
