@@ -6,8 +6,8 @@ use binary_layout::prelude::*;
 use memmap2::Mmap;
 
 define_layout!(snss_header, LittleEndian, {
-    header: [u8, 4],
-    version: [u8, 4],
+    header: [u8; 4],
+    version: [u8; 4],
 });
 
 define_layout!(snss_packet, LittleEndian, {
