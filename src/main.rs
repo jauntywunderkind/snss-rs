@@ -1,1 +1,1 @@
-view.rs
+snss.rs
