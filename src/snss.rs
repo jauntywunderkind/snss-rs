@@ -1,6 +1,8 @@
 #![allow(unused)]
 pub mod navigation_entry;
 
+#[macro_use]
+extern crate arrayref;
 extern crate binary_layout;
 extern crate memmap2;
 

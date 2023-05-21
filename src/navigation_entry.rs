@@ -58,7 +58,7 @@ fn as_usize(data: &[u8]) -> [u8; 8] {
 
 fn get_end_offset(data: &[u8], pos: usize, offset: usize) -> usize {
     let len_bytes = &data[offset..offset + 4];
-    let len = u32::from_le_bytes(len_bytes);
+    let len = u32::from_le_bytes(*array_ref![len_bytes, 0, 4]);
     pos + offset + len as usize
 }
 
