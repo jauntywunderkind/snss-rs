@@ -21,7 +21,7 @@ define_layout!(snss_packet, LittleEndian, {
 
 pub struct Snss<'a> {
     data: &'a [u8],
-    position: u32,
+    position: usize,
 }
 
 impl<'a> Snss<'a> {
@@ -37,9 +37,20 @@ impl<'a> Snss<'a> {
 }
 
 impl<'a> Iterator for Snss<'a> {
-    type Item = NavigationEntry;
-    fn next(&mut self) -> Option<NavigationEntry> {
-        Some(NavigationEntry::new())
+    type Item = NavigationEntry<'a>;
+    fn next(&mut self) -> Option<NavigationEntry<'a>> {
+        if self.data.len() < self.position {
+            return None;
+        }
+
+        let data_len = snss_packet::length::read(self.data);
+        let data_start = self.position + 2;
+        let end_position = data_start + data_len as usize;
+        //let slice = unsafe { self.data.get_unchecked(self.position..end_position) };
+        let slice = &self.data[data_start..end_position];
+        let entry = NavigationEntry::new(slice);
+        self.position = end_position;
+        Some(entry)
     }
 }
 

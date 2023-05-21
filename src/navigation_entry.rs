@@ -52,13 +52,15 @@ impl NavigationEntryLengths {
     }
 }
 
-pub struct NavigationEntry {
+pub struct NavigationEntry<'a> {
+    data: &'a [u8],
     lengths: NavigationEntryLengths,
 }
 
-impl NavigationEntry {
-    pub fn new() -> NavigationEntry {
+impl NavigationEntry<'_> {
+    pub fn new(data: &[u8]) -> NavigationEntry {
         NavigationEntry {
+            data,
             lengths: NavigationEntryLengths::new(),
         }
     }
