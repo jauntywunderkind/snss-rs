@@ -33,8 +33,8 @@ impl<'a> Snss<'a> {
         snss
     }
     fn assert_header(&mut self) {
-        assert!(snss_header::header::data(self.data) == "SNSS".as_bytes());
-        assert!(snss_header::version::read(self.data) == 3);
+        assert_eq!(snss_header::header::data(self.data), "SNSS".as_bytes());
+        assert_eq!(3, snss_header::version::read(self.data));
     }
 }
 
