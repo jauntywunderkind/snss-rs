@@ -39,6 +39,7 @@ define_layout!(snss_navigation_entry, LittleEndian, {
 });
 
 // absolute position in data for the end of these sections
+#[derive(Debug)]
 pub struct NavigationEntryLengths {
     url: usize,
     title: usize,
@@ -82,6 +83,7 @@ impl NavigationEntryLengths {
     }
 }
 
+#[derive(Debug)]
 pub struct NavigationEntry<'a> {
     data: &'a [u8],
     lengths: NavigationEntryLengths,
