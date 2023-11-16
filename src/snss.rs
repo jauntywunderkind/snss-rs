@@ -62,5 +62,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let snss = Snss::new(&mmap);
 
+    for i in snss {
+        println!("> {:?}", i)
+    }
+
     Ok(())
 }
