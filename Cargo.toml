@@ -2,6 +2,18 @@
 name = "snss"
 version = "0.1.0"
 
+[[bin]]
+name = "snss"
+path = "src/snss.rs"
+
+[[bin]]
+name = "mdview"
+path = "src/view.rs"
+
+[[bin]]
+name = "memmap"
+path = "src/memmap.rs"
+
 [dependencies]
 memmap2 = "0.6.1"
 binary-layout = "3.1.3"
