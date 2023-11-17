@@ -58,9 +58,11 @@ fn as_usize(data: &[u8]) -> [u8; 8] {
 }
 
 fn get_end_offset(data: &[u8], pos: usize, offset: usize) -> usize {
-    let len_bytes = &data[offset..offset + 4];
-    let len = u32::from_le_bytes(*array_ref![len_bytes, 0, 4]);
-    pos + offset + len as usize
+    let start = pos + offset;
+    let end = start + 4;
+    let len_bytes = &data[start..end];
+    let len = u32::from_le_bytes(*array_ref![len_bytes, 0, 4]) as usize;
+    end + len
 }
 
 impl NavigationEntryLengths {
