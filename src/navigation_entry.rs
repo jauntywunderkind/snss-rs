@@ -1,15 +1,14 @@
 use binary_layout::prelude::*;
 
 // numbers of fixed bytes before this variable length section
-const OFFSET_URL: usize = 8;
+const OFFSET_URL: usize = 4;
 const OFFSET_TITLE: usize = 0;
-const OFFSET_PAGE_STATE: usize = 0;
+const OFFSET_PAGE_STATE: usize = 4;
 const OFFSET_REFERRER_URL: usize = 8;
 const OFFSET_SEARCH_TERMS: usize = 16;
 const OFFSET_EXTENDED_MAP: usize = 8;
 
 define_layout!(snss_navigation_entry, LittleEndian, {
-    session_id: i32,
     index: i32,
     //url: [u8],
 
@@ -21,10 +20,11 @@ define_layout!(snss_navigation_entry, LittleEndian, {
     transition_type: u32,
     type_mask: u32,
     //referrer_url: [u8]
+    //referrer_policy0: u32, // ccl-chromium-snss2 lists referrer_polciy twice???
 
     original_request_url: u32,
-    is_overriding_user_agent: u32,
-    //timestamp: u64,
+    is_overriding_user_agent: u32, // bool
+    timestamp: u64,
     //search_terms: [u16],
 
     http_status: u32,
