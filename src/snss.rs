@@ -21,6 +21,11 @@ define_layout!(snss_packet, LittleEndian, {
     data: [u8],
 });
 
+//define_layout!(snss_layout, LittleEndian, {
+//    header: snss_header,
+//    packets: [snss_packet],
+//});
+
 pub struct Snss<'a> {
     data: &'a [u8],
     position: usize,
@@ -34,7 +39,7 @@ impl<'a> Snss<'a> {
     }
     fn assert_header(&mut self) {
         assert_eq!(snss_header::header::data(self.data), "SNSS".as_bytes());
-        //assert_eq!(3, snss_header::version::read(self.data));
+        assert_eq!(3, snss_header::version::read(self.data));
     }
 }
 
@@ -42,22 +47,43 @@ impl<'a> Iterator for Snss<'a> {
     type Item = NavigationEntry<'a>;
     fn next(&mut self) -> Option<NavigationEntry<'a>> {
         if self.data.len() < self.position {
+            println!("hi-none");
             return None;
         }
+        println!("hi");
 
-        let data_len = snss_packet::length::read(self.data);
-        let data_start = self.position + 2;
-        let end_position = data_start + data_len as usize;
-        //let slice = unsafe { self.data.get_unchecked(self.position..end_position) };
-        let slice = &self.data[data_start..end_position];
-        let entry = NavigationEntry::new(slice);
-        self.position = end_position;
+        let mut prev = self.position;
+        self.position += 2;
+        let data_end = snss_packet::length::read(&self.data[prev..self.position]); // how to offset?
+
+        println!("hi1 {} {} {}", prev, self.position, data_end);
+        //self.position += 2; // snss_packet#length's length
+        //let data_start = self.position + 2; // snss_packet.length
+        //let end_position = data_start + data_len as usize;
+        //let end_position = pos + ;
+        //let data_end = self.position + data_len as usize;
+
+        //let pos_data_end = data_end as usize;
+        //
+        prev = self.position;
+        self.position += data_end as usize;
+        //self.position += data_end as usize; // or just equals?
+        //println!("hi2 {} + {} = {}", self.position, data_len, data_end);
+        println!("hi2 {} {}", prev, self.position);
+
+        //let data = &self.data[prev..self.position];
+        //let slice = unsafe { self.data.get_unchecked(self.position..pos_data_end) };
+        //let slice = &self.data[data_start..end_position];
+        //self.position = pos_data_end; 
+        println!("hi3 {:?}", self.data);
+        let entry = NavigationEntry::new(self.data, Some(self.position));
+        println!("hi5 {:?}", entry);
         Some(entry)
     }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let file = File::open("README.md")?;
+    let file = File::open("symlink")?;
     let mmap = unsafe { Mmap::map(&file)? };
 
     let snss = Snss::new(&mmap);

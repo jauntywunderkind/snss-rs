@@ -1,7 +1,7 @@
 use binary_layout::prelude::*;
 
 // numbers of fixed bytes before this variable length section
-const OFFSET_URL: usize = 4;
+const OFFSET_URL: usize = 8;
 const OFFSET_TITLE: usize = 0;
 const OFFSET_PAGE_STATE: usize = 4;
 const OFFSET_REFERRER_URL: usize = 8;
@@ -9,6 +9,7 @@ const OFFSET_SEARCH_TERMS: usize = 16;
 const OFFSET_EXTENDED_MAP: usize = 8;
 
 define_layout!(snss_navigation_entry, LittleEndian, {
+    session: i32,
     index: i32,
     //url: [u8],
 
@@ -40,7 +41,8 @@ define_layout!(snss_navigation_entry, LittleEndian, {
 
 // absolute position in data for the end of these sections
 #[derive(Debug)]
-pub struct NavigationEntryLengths {
+pub struct NavigationEntryPos {
+    start: usize,
     url: usize,
     title: usize,
     page_state: usize,
@@ -49,51 +51,80 @@ pub struct NavigationEntryLengths {
     extended_map: usize,
 }
 
-fn as_usize(data: &[u8]) -> [u8; 8] {
-    let mut len_usize: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0];
-    for i in 0..4 {
-        len_usize[i] = data[i]
-    }
-    len_usize
+fn get_end_offset(data: &[u8], pos: usize) -> usize {
+    let end = pos + 4;
+    let len_bytes = &data[pos..end];
+    println!("bytes {:?}", len_bytes);
+    let len = u32::from_le_bytes(*array_ref![len_bytes, 0, 4]);
+    println!("len {} {}:{}", pos, len, len as usize);
+    len as usize
 }
 
-fn get_end_offset(data: &[u8], pos: usize, offset: usize) -> usize {
-    let start = pos + offset;
-    let end = start + 4;
-    let len_bytes = &data[start..end];
-    let len = u32::from_le_bytes(*array_ref![len_bytes, 0, 4]) as usize;
-    end + len
-}
+impl NavigationEntryPos {
+    pub fn new(entry: &[u8], pos: Option<usize>) -> [NavigationEntryPos; 2] {
+        let start = match pos {
+            Some(x) => x,
+            None => 0,
+        };
 
-impl NavigationEntryLengths {
-    pub fn new(data: &[u8]) -> NavigationEntryLengths {
-        let url = get_end_offset(data, 0, OFFSET_URL);
-        let title = get_end_offset(data, url, OFFSET_TITLE);
-        let page_state = get_end_offset(data, title, OFFSET_PAGE_STATE);
-        let referrer_url = get_end_offset(data, page_state, OFFSET_REFERRER_URL);
-        let search_terms = get_end_offset(data, referrer_url, OFFSET_SEARCH_TERMS);
-        let extended_map = get_end_offset(data, search_terms, OFFSET_EXTENDED_MAP);
+        println!("");
+        println!("nel-ne {} {:?}", start, entry);
 
-        NavigationEntryLengths {
-            url,
-            title,
-            page_state,
-            referrer_url,
-            search_terms,
-            extended_map,
-        }
+        let url_start = start + OFFSET_URL;
+        let url_end = url_start + get_end_offset(entry, url_start);
+        println!("nel-url {} {}", url_start, url_end);
+
+        let title_start = url_end + OFFSET_TITLE + 4;
+        let title_end = url_start + get_end_offset(entry, title_start);
+        println!("nel-title {} {}", title_start, title_end);
+
+        let page_state_start = title_end + OFFSET_PAGE_STATE + 4;
+        let page_state_end = page_state_start + get_end_offset(entry, title_end);
+        println!("nel-ps {} {}", page_state_start, page_state_end);
+
+        let referrer_url_start = page_state_end + OFFSET_REFERRER_URL + 4;
+        let referrer_url_end = referrer_url_start + get_end_offset(entry, referrer_url_start);
+        println!("nel-ru {} {}", referrer_url_start, referrer_url_end);
+
+        let search_terms_start = referrer_url_end + OFFSET_SEARCH_TERMS + 4;
+        let search_terms_end = search_terms_start + get_end_offset(entry, search_terms_start);
+        println!("nel-st {} {}", search_terms_start, search_terms_end);
+
+        let extended_map_start = search_terms_end + OFFSET_SEARCH_TERMS + 4;
+        let extended_map_end = extended_map_start + get_end_offset(entry, extended_map_start);
+        println!("nel-em {} {}", extended_map_start, extended_map_end);
+
+        [NavigationEntryPos {
+            start,
+            url: url_start,
+            title: title_start,
+            page_state: page_state_start,
+            referrer_url: referrer_url_start,
+            search_terms: search_terms_start,
+            extended_map: extended_map_start,
+        },
+        NavigationEntryPos {
+            start,
+            url: url_end,
+            title: title_end,
+            page_state: page_state_end,
+            referrer_url: referrer_url_end,
+            search_terms: search_terms_end,
+            extended_map: extended_map_end,
+        }]
     }
 }
 
 #[derive(Debug)]
 pub struct NavigationEntry<'a> {
     data: &'a [u8],
-    lengths: NavigationEntryLengths,
+    pos_start: NavigationEntryPos,
+    pos_end: NavigationEntryPos,
 }
 
 impl NavigationEntry<'_> {
-    pub fn new(data: &[u8]) -> NavigationEntry {
-        let lengths = NavigationEntryLengths::new(data);
-        NavigationEntry { data, lengths }
+    pub fn new(data: &[u8], start: Option<usize>) -> NavigationEntry {
+        let [pos_start, pos_end] = NavigationEntryPos::new(data, start);
+        NavigationEntry { data, pos_start, pos_end }
     }
 }
