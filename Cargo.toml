@@ -6,15 +6,7 @@ version = "0.1.0"
 name = "snss"
 path = "src/snss.rs"
 
-[[bin]]
-name = "mdview"
-path = "src/view.rs"
-
-[[bin]]
-name = "memmap"
-path = "src/memmap.rs"
-
 [dependencies]
-memmap2 = "0.9.0"
-binary-layout = "3.2.0"
-arrayref = "0.3.7"
+thiserror = "2.0.11"
+serde = "1.0.218"
+byteorder = "1.5.0"
