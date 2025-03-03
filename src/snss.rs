@@ -32,7 +32,7 @@ pub struct Snss<'a> {
 }
 
 impl<'a> Snss<'a> {
-    fn new(data: &'a [u8]) -> Snss {
+    fn new(data: &'a [u8]) -> Snss<'a> {
         let mut snss = Snss { data, position: 8 };
         snss.assert_header();
         snss
